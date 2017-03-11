@@ -7,19 +7,18 @@ import loadData, numpy as np, random
 class NeuralNetwork:
 	def __init__(self):
 		# initialize the neural network as a dict of dicts of weights
-		self.layers = 3
 		# self.layerlens = [784, 10]
-		self.layerlens = [1, 1, 1]
+		self.layers = [1, 1, 1]
 		self.weights = dict()
 		# bias[layer][node]
 		self.bias = dict()
-		for i in range(1, self.layers):
+		for i in range(1, len(self.layers)):
 			self.weights[i] = []
 			self.bias[i] = []
-			for j in range(self.layerlens[i]):
+			for j in range(self.layers[i]):
 				self.bias[i].append(1)
 				self.weights[i].append([])
-				for k in range(self.layerlens[i-1]):
+				for k in range(self.layers[i-1]):
 					# self.weights[layer][node1][node2] where node1 is in layer and node2 in in layer-1
 					self.weights[i][j].append(1)
 
