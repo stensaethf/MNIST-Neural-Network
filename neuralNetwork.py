@@ -11,6 +11,24 @@ class NeuralNetwork:
 		# filler, remove later
 		x = 1
 
+	def feedForward(self):
+		# do stuff
+
+		# filler, remove later
+		x = 1
+
+	def backpropogate(self):
+		# do stuff
+
+		# filler, remove later
+		x = 1
+
+	def sigma(self):
+		# do stuff
+
+		# filler, remove later
+		x = 1
+
 def main():
 	# Loads the train, dev and test sets.
 	# 50,000, 10,000, 10,000
