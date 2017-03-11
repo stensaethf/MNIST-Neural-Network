@@ -11,11 +11,11 @@ class NeuralNetwork:
 		# filler, remove later
 		x = 1
 
-	def feedForward(self):
-		# do stuff
+	def feedForward(self, input):
+		for layer in self.weights:
+			# do stuff
 
-		# filler, remove later
-		x = 1
+		return output
 
 	def backpropogate(self):
 		# do stuff
