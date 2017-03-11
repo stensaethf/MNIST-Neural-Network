@@ -12,6 +12,7 @@ class NeuralNetwork:
 		self.weights = dict()
 		# bias[layer][node]
 		self.bias = dict()
+		self.alpha = 0.1
 		for i in range(1, len(self.layers)):
 			self.weights[i] = []
 			self.bias[i] = []
@@ -73,16 +74,13 @@ class NeuralNetwork:
 						Del[j] = self.sigmaPrime(ins[j])*sum(self.weights[l][m][j]*Del[m] for m in range(self.layers[l-1]))
 						#Del[j] = self.sigmaPrime(ins[j])*np.dot(self.weights[l][j], Del)
 
-				# update every weight in network using deltas
-				for i in range(len(network)):
-					for j in range(len(network[i])):
-						weights[i][j] = weights[i][j] + self.alpha*a-[i]*Del[j]
+				# update every weight in network using dels
+				for l in range(len(self.layers)):
+					for j in range(self.layers[l]):
+						for m in self.weights[l][j]:
+							self.weights[l][j][m] = self.weights[l][j][m] + self.alpha*a[m]*Del[j]
 
-		return network
 		#learning rate: \alpha(t)=1000/(1000+t) seems good
-
-		# filler, remove later
-		x = 1
 
 	def sigma(self, x):
 		# return 1.0 / (1 + Math.exp(-x))
