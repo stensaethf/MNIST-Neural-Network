@@ -7,8 +7,9 @@ import loadData, numpy as np, random
 class NeuralNetwork:
 	def __init__(self):
 		# initialize the neural network as a dict of dicts of weights
-		self.layers = 2
-		self.layerlens = [784, 10]
+		self.layers = 3
+		# self.layerlens = [784, 10]
+		self.layerlens = [1, 1, 1]
 		self.weights = dict()
 		# bias[layer][node]
 		self.bias = dict()
@@ -25,10 +26,12 @@ class NeuralNetwork:
 	def feedForward(self, result):
 		# weights: [layer][node]
 		for layer in self.weights:
-			# w dot input + bias
-			dot_product = numpy.dot(self.weights[layer][1:], result)
-			bias = self.weights[layer][0]
-			result = sigma(dot_product + bias)
+			output = []
+			for node_index in range(len(self.weights[layer])):
+				dot_product = np.dot(self.weights[layer][node_index], result)
+				bias = self.bias[layer][node_index]
+				output.append(self.sigma(dot_product + bias))
+			result = output
 
 		return result
 
@@ -83,16 +86,20 @@ class NeuralNetwork:
 		return self.sigma(x)*(1.0-self.sigma(x))
 
 def main():
-	# Loads the train, dev and test sets.
-	# 50,000, 10,000, 10,000
-	train, dev, test = loadData.loadMNIST()
-	# Gets the training images.
-	train_images = train[0]
-	# Gets the training labels.
-	train_labels = train[1]
+	# # Loads the train, dev and test sets.
+	# # 50,000, 10,000, 10,000
+	# train, dev, test = loadData.loadMNIST()
+	# # Gets the training images.
+	# train_images = train[0]
+	# # Gets the training labels.
+	# train_labels = train[1]
 
-	print len(train_images)
-	print len(train_labels)
+	# print len(train_images)
+	# print len(train_labels)
+
+	net = NeuralNetwork()
+	result = net.feedForward([0])
+	print result
 
 if __name__ == '__main__':
 	main()
