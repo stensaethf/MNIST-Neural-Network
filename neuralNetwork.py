@@ -5,10 +5,10 @@
 import loadData, numpy as np, random
 
 class NeuralNetwork:
-	def __init__(self, iterations):
+	def __init__(self, iterations, layers):
 		# initialize the neural network as a dict of dicts of weights
 		self.iterations = iterations
-		self.layers = [784, 10]
+		self.layers = layers
 		# self.layers = [1, 1, 1]
 		self.weights = dict()
 		# bias[layer][node]
@@ -126,7 +126,7 @@ def main():
 	# Gets the training labels.
 	train_labels = train[1]
 
-	network = NeuralNetwork(10)
+	network = NeuralNetwork(10, [784, 10])
 	network.backpropogate(train_images[:1000], train_labels[:1000])
 	network.numberCorrect(dev[0][:1000], dev[1][:1000])
 
