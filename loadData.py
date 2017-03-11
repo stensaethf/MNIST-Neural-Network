@@ -3,7 +3,7 @@
 # nicely pickled data.
 # 03.11.17
 
-import cPickle, gzip
+import cPickle, gzip, numpy
 
 def loadMNIST():
 	# Load the dataset.
@@ -21,9 +21,12 @@ def main():
 	# Loads the train, dev and test sets.
 	train, dev, test = loadMNIST()
 	# Gets the training images.
-	train_data = train[0]
+	train_images = train[0]
 	# Gets the training labels.
 	train_labels = train[1]
+
+	print len(train_images)
+	print len(train_labels)
 
 if __name__ == '__main__':
 	main()

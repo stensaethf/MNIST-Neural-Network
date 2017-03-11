@@ -2,7 +2,7 @@
 # Neural network implementation.
 # 03.11.17
 
-import loadData
+import loadData, numpy
 
 class NeuralNetwork:
 	def __init__(self):
@@ -16,10 +16,11 @@ def main():
 	# 50,000, 10,000, 10,000
 	train, dev, test = loadData.loadMNIST()
 	# Gets the training images.
-	train_data = train[0]
+	train_images = train[0]
 	# Gets the training labels.
 	train_labels = train[1]
 
+	print len(train_images)
 	print len(train_labels)
 
 if __name__ == '__main__':
