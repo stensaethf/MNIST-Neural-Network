@@ -5,8 +5,9 @@
 import loadData, numpy as np, random
 
 class NeuralNetwork:
-	def __init__(self):
+	def __init__(self, iterations):
 		# initialize the neural network as a dict of dicts of weights
+		self.iterations = iterations
 		self.layers = [784, 10]
 		# self.layers = [1, 1, 1]
 		self.weights = dict()
@@ -54,8 +55,9 @@ class NeuralNetwork:
 			for j in range(len(network[i])):
 				network[i][j] = random.random() / 10.0  # small random number"""
 
-		for k in range(50): #repeat some number of times
+		for k in range(self.iterations): #repeat some number of times
 			for i in range(len(examples)):
+				print i
 				x = examples[i]
 				y = labels[i]
 
@@ -101,7 +103,7 @@ class NeuralNetwork:
 			label = labels[i]
 			# feed forward
 			a, ins = self.feedForward(image)
-			index = a.index(max(a))
+			index = a[-1].index(max(a[-1]))
 
 			if index == label:
 				count += 1
@@ -124,9 +126,9 @@ def main():
 	# Gets the training labels.
 	train_labels = train[1]
 
-	network = NeuralNetwork()
-	network.backpropogate(train_images, train_labels)
-	network.numberCorrect(dev[0], dev[1])
+	network = NeuralNetwork(10)
+	network.backpropogate(train_images[:1000], train_labels[:1000])
+	network.numberCorrect(dev[0][:1000], dev[1][:1000])
 
 if __name__ == '__main__':
 	main()
