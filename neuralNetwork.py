@@ -16,11 +16,15 @@ class NeuralNetwork:
 				for k in range(self.layerlens[i-1]):
 					self.weights[k+1][j] = 1
 
-	def feedForward(self, input):
+	def feedForward(self, result):
+		# weights: [layer][node]
 		for layer in self.weights:
-			# do stuff
+			# w dot input + bias
+			dot_product = numpy.dot(self.weights[layer][1:], result)
+			bias = self.weights[layer][0]
+			result = sigma(dot_product + bias)
 
-		return output
+		return result
 
 	def backpropogate(self, examples, network):
 		# compute the Del values for output units using observed error (eq. 18.8)
