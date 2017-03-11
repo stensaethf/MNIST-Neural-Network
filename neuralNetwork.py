@@ -10,12 +10,17 @@ class NeuralNetwork:
 		self.layers = 2
 		self.layerlens = [784, 10]
 		self.weights = dict()
+		# bias[layer][node]
+		self.bias = dict()
 		for i in range(1, self.layers):
 			self.weights[i] = []
+			self.bias[i] = []
 			for j in range(self.layerlens[i]):
-				self.weights[i].append(1)
+				self.bias[i].append(1)
+				self.weights[i].append([])
 				for k in range(self.layerlens[i-1]):
-					self.weights[i].append(1)
+					# self.weights[layer][node1][node2] where node1 is in layer and node2 in in layer-1
+					self.weights[i][j].append(1)
 
 	def feedForward(self):
 		# do stuff
