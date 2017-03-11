@@ -65,11 +65,9 @@ class NeuralNetwork:
 		# filler, remove later
 		x = 1
 
-	def sigma(self):
-		# do stuff
-
-		# filler, remove later
-		x = 1
+	def sigma(self, x):
+		# return 1.0 / (1 + Math.exp(-x))
+		return 1.0 / (1 + numpy.exp(-x))
 
 def main():
 	# Loads the train, dev and test sets.
