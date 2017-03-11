@@ -13,6 +13,7 @@ class NeuralNetwork:
 
 def main():
 	# Loads the train, dev and test sets.
+	# 50,000, 10,000, 10,000
 	train, dev, test = loadData.loadMNIST()
 	# Gets the training images.
 	train_data = train[0]
