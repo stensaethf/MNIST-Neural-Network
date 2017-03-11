@@ -2,6 +2,8 @@
 # Neural network implementation.
 # 03.11.17
 
+import loadData
+
 class NeuralNetwork:
 	def __init__(self):
 		# do stuff
@@ -10,10 +12,14 @@ class NeuralNetwork:
 		x = 1
 
 def main():
-	# do stuff
+	# Loads the train, dev and test sets.
+	train, dev, test = loadData.loadMNIST()
+	# Gets the training images.
+	train_data = train[0]
+	# Gets the training labels.
+	train_labels = train[1]
 
-	# filler, remove later
-	print "inside"
+	print len(train_labels)
 
 if __name__ == '__main__':
 	main()
