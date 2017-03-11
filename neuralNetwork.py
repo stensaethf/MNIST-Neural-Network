@@ -18,16 +18,16 @@ class NeuralNetwork:
 			self.weights[i] = []
 			self.bias[i] = []
 			for j in range(self.layers[i]):
-				self.bias[i].append(1)
+				self.bias[i].append(random.random())
 				self.weights[i].append([])
 				for k in range(self.layers[i-1]):
 					# self.weights[layer][node1][node2] where node1 is in layer and node2 in in layer-1
-					self.weights[i][j].append(1)
+					self.weights[i][j].append(random.random())
 
 	def feedForward(self, result):
 		# weights: [layer][node]
 		output = [result]
-		ins = []
+		ins = [result]
 		for layer in self.weights:
 			output.append([])
 			ins.append([])
@@ -56,8 +56,8 @@ class NeuralNetwork:
 				network[i][j] = random.random() / 10.0  # small random number"""
 
 		for k in range(self.iterations): #repeat some number of times
+			self.alpha = (1000/1000+k)
 			for i in range(len(examples)):
-				print i
 				x = examples[i]
 				y = labels[i]
 
@@ -65,18 +65,22 @@ class NeuralNetwork:
 				# a, ins = [[]]
 				a, ins = self.feedForward(x)
 
-				Del = []
+				Del = dict()
 
 				# propagate deltas backward from output layer to input layer
 
 				# start by calculating the Dels
+				Del[len(self.layers)-1] = []
 				for j in range(self.layers[-1]):
-					Del.append(self.sigmaPrime(ins[-1][j])*(y-a[-1][j]))
+					Del[len(self.layers)-1].append(self.sigmaPrime(ins[-1][j])*(y-a[-1][j]))
 
 				# propagate back through the rest of the layers
 				for l in range(len(self.layers)-1, 0, -1):
-					for j in range(len(self.weights[l])):
-						Del[j] = self.sigmaPrime(ins[l-1][j])*sum(self.weights[l][j][m]*Del[j] for m in range(self.layers[l-1]))
+					Del[l-1] = []
+					for j in range(self.layers[l]):
+						Del[l-1].append(self.sigmaPrime(ins[l-1][j]))
+						print Del[l][j]
+						Del[l-1][-1] *= sum(self.weights[l][j][m]*Del[l][j] for m in range(self.layers[l-1]))
 						#Del[j] = self.sigmaPrime(ins[j])*np.dot(self.weights[l][j], Del)
 
 				# update every weight in network using dels
@@ -90,7 +94,7 @@ class NeuralNetwork:
 							# print a[l-1][m]
 							# print "DEL"
 							# print Del[j]
-							self.weights[l][j][m] = self.weights[l][j][m] + self.alpha*a[l-1][m]*Del[j]
+							self.weights[l][j][m] = self.weights[l][j][m] + self.alpha*a[l-1][m]*Del[l][j]
 
 			self.numberCorrect(examples, labels)
 
@@ -126,8 +130,8 @@ def main():
 	# Gets the training labels.
 	train_labels = train[1]
 
-	network = NeuralNetwork(10, [784, 10])
-	network.backpropogate(train_images[:1000], train_labels[:1000])
+	network = NeuralNetwork(10, [784, 11, 10])
+	network.backpropogate(train_images[:200], train_labels[:200])
 	network.numberCorrect(dev[0][:1000], dev[1][:1000])
 
 if __name__ == '__main__':
