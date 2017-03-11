@@ -9,8 +9,8 @@ def loadMNIST():
 	# Load the dataset.
 	f = gzip.open('mnist.pkl.gz', 'rb')
 	# Each set is a list of the form [images[], labels[]].
-	# images[]: list of images, each a list of length 784 where each item is
-	# 	a grayscale pixel.
+	# images[]: list of images, each a list of length 784 (28 x 28) where each
+	# 	item is a grayscale pixel.
 	# labels[]: list of labels for the images.
 	train_set, dev_set, test_set = cPickle.load(f)
 	f.close()
