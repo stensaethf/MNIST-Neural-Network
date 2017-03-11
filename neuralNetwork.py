@@ -26,15 +26,17 @@ class NeuralNetwork:
 		# weights: [layer][node]
 		for layer in self.weights:
 			output = []
+			ins = []
 			for node_index in range(len(self.weights[layer])):
 				dot_product = np.dot(self.weights[layer][node_index], result)
 				bias = self.bias[layer][node_index]
+				ins.append(dot_product + bias)
 				output.append(self.sigma(dot_product + bias))
 			result = output
 
-		return result
+		return result, ins
 
-	def backpropogate(self, examples):
+	def backpropogate(self, examples, labels):
 		# compute the Del values for output units using observed error (eq. 18.8)
 		# starting at output layer, repeat for each hidden layer until earliest reached
 			# propagate the Del values back to previous layer
@@ -44,29 +46,34 @@ class NeuralNetwork:
 		#18.8: w_i=w_i+\alpha(y-h_w(x))*h_w(x)(1-h_w(x))*x_i
 		#h_w(x)=Log(w*x)=1/(1+e^{-w*x})  ---Threshold function---
 
+		"""
+		for i in range(len(network)):
+			for j in range(len(network[i])):
+				network[i][j] = random.random() / 10.0  # small random number"""
+
 		for k in range(50): #repeat some number of times
-			for i in range(len(network)):
-				for j in range(len(network[i])):
-					network[i][j] = random.random()/10.0 #small random number
+			for i in range(len(examples)):
+				x = examples[i]
+				y = labels[i]
 
-			for (x,y) in examples:
-				# propagate the inputs forward to compute the inputs
-				a = []
-				ins = []
-				for i in range(len(inputLayer)):
-					a[i] = x[i]
-				for l in range(2,self.layers):
-					for j in range(len(network[l])):
-						ins[j] = sum(weights[i][j]*a[i] for i in range(len(weights[j])))
-						a[j] = sigma(ins[j])
+				# feed forward
+				a, ins = self.feedForward(x)
+
+				Del = []
+
 				# propagate deltas backward from output layer to input layer
-				for input in outputLayer:
-					Del[j] = self.sigmaPrime(ins[j])*(y[j]-a[j])
-				for l in range(self.layers-1,1,-1):
-					for i in layer[l]:
-						Del[i] = sigmaPrime(ins[i])*sum(w[i][j]*Del[j] for j in range(len(w[i])))
 
-				#update every weight in netowkr using deltas
+				# start by calculating the Dels
+				for j in range(self.layers[-1]):
+					Del[j] = self.sigmaPrime(ins[j])*(y[j]-a[j])
+
+				# propagate back through the rest of the layers
+				for l in range(len(self.layers)-1, 0, -1):
+					for j in self.weights[l]:
+						Del[j] = self.sigmaPrime(ins[j])*sum(self.weights[l][m][j]*Del[m] for m in range(self.layers[l-1]))
+						#Del[j] = self.sigmaPrime(ins[j])*np.dot(self.weights[l][j], Del)
+
+				# update every weight in network using deltas
 				for i in range(len(network)):
 					for j in range(len(network[i])):
 						weights[i][j] = weights[i][j] + self.alpha*a-[i]*Del[j]
