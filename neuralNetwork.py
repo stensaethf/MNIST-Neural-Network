@@ -59,13 +59,13 @@ class NeuralNetwork:
 				for l in range(2,self.layers):
 					for j in range(len(network[l])):
 						ins[j] = sum(weights[i][j]*a[i] for i in range(len(weights[j])))
-						a[j] = g(ins[j])
+						a[j] = sigma(ins[j])
 				# propagate deltas backward from output layer to input layer
 				for input in outputLayer:
 					Del[j] = self.sigmaPrime(ins[j])*(y[j]-a[j])
 				for l in range(self.layers-1,1,-1):
 					for i in layer[l]:
-						Del[i] = gprime(ins[i])*sum(w[i][j]*Del[j] for j in range(len(w[i])))
+						Del[i] = sigmaPrime(ins[i])*sum(w[i][j]*Del[j] for j in range(len(w[i])))
 
 				#update every weight in netowkr using deltas
 				for i in range(len(network)):
