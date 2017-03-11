@@ -6,15 +6,16 @@ import loadData, numpy as np, random
 
 class NeuralNetwork:
 	def __init__(self):
+		# initialize the neural network as a dict of dicts of weights
 		self.layers = 2
 		self.layerlens = [784, 10]
 		self.weights = dict()
 		for i in range(1, self.layers):
-			self.weights[i] = dict()
+			self.weights[i] = []
 			for j in range(self.layerlens[i]):
-				self.weights[0][j] = 1
+				self.weights[i].append(1)
 				for k in range(self.layerlens[i-1]):
-					self.weights[k+1][j] = 1
+					self.weights[i].append(1)
 
 	def feedForward(self):
 		# do stuff
@@ -22,7 +23,7 @@ class NeuralNetwork:
 		# filler, remove later
 		x = 1
 
-	def backpropogate(self, examples, network):
+	def backpropogate(self, examples):
 		# compute the Del values for output units using observed error (eq. 18.8)
 		# starting at output layer, repeat for each hidden layer until earliest reached
 			# propagate the Del values back to previous layer
@@ -30,9 +31,9 @@ class NeuralNetwork:
 		# Del_j = g'(in_j)\sum_k{w_{j,k}Del_k}
 		# w_{j,k}=w_{j,k}+\alpha*a_j*Del_k
 		#18.8: w_i=w_i+\alpha(y-h_w(x))*h_w(x)(1-h_w(x))*x_i
-		#h_w(x)=Log(w*x)=1/(1+e^{-w*x})  ---Threshold function---, maybe linear?
+		#h_w(x)=Log(w*x)=1/(1+e^{-w*x})  ---Threshold function---
 
-		for i in range(50): #repeat
+		for k in range(50): #repeat some number of times
 			for i in range(len(network)):
 				for j in range(len(network[i])):
 					network[i][j] = random.random()/10.0 #small random number
@@ -49,7 +50,7 @@ class NeuralNetwork:
 						a[j] = g(ins[j])
 				# propagate deltas backward from output layer to input layer
 				for input in outputLayer:
-					Del[j] = gprime(ins[j])*(y[j]-a[j])
+					Del[j] = self.sigmaPrime(ins[j])*(y[j]-a[j])
 				for l in range(self.layers-1,1,-1):
 					for i in layer[l]:
 						Del[i] = gprime(ins[i])*sum(w[i][j]*Del[j] for j in range(len(w[i])))
@@ -67,7 +68,10 @@ class NeuralNetwork:
 
 	def sigma(self, x):
 		# return 1.0 / (1 + Math.exp(-x))
-		return 1.0 / (1 + numpy.exp(-x))
+		return 1.0 / (1 + np.exp(-x))
+
+	def sigmaPrime(self, x):
+		return self.sigma(x)*(1.0-self.sigma(x))
 
 def main():
 	# Loads the train, dev and test sets.
