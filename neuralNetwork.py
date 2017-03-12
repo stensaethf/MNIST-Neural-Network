@@ -41,7 +41,7 @@ class NeuralNetwork:
 			acts.append(result)
 		return thresholds, acts
 
-	def backpropogate(self, example, label):
+	def backpropagate(self, example, label):
 		# compute the Del values for output units using observed error (eq. 18.8)
 		# starting at output layer, repeat for each hidden layer until earliest reached
 			# propagate the Del values back to previous layer
@@ -134,7 +134,7 @@ class NeuralNetwork:
 				y = np.zeros((self.layers[-1], 1))
 				y[labels[e]] = 1.0
 
-				self.backpropogate(x, y)
+				self.backpropagate(x, y)
 
 			self.numberCorrect(examples, labels)
 
