@@ -4,41 +4,44 @@
 
 import loadData, numpy as np, random
 
+random.seed(50)
+
 class NeuralNetwork:
 	def __init__(self, iterations, layers):
 		# initialize the neural network as a dict of dicts of weights
 		self.iterations = iterations
 		self.layers = layers
-		# self.layers = [1, 1, 1]
-		self.weights = dict()
+		self.weights = []
 		# bias[layer][node]
-		self.bias = dict()
-		self.alpha = 0.1
+		# we do not count the input layer, so layer = 0 is the layer after
+		# the input layer.
+		self.bias = []
+
+        # weights[0] --> matrix storing weights connecting first and second
+        # 	neuron layers.
+        # weights[0][j][k] --> kth neuron in the first layer connecting to
+        # 	jth neuron in the second layer.
 		for i in range(1, len(self.layers)):
-			self.weights[i] = []
-			self.bias[i] = []
+			self.weights.append([])
+			self.bias.append([])
 			for j in range(self.layers[i]):
-				self.bias[i].append(random.random())
-				self.weights[i].append([])
-				for k in range(self.layers[i-1]):
-					# self.weights[layer][node1][node2] where node1 is in layer and node2 in in layer-1
-					self.weights[i][j].append(random.random())
+				self.weights[-1].append([])
+				self.bias[-1].append(random.random())
+				for k in range(self.layers[i - 1]):
+					self.weights[-1][-1].append(random.random())
 
 	def feedForward(self, result):
-		# weights: [layer][node]
-		output = [result]
-		ins = [result]
-		for layer in self.weights:
-			output.append([])
-			ins.append([])
-			for node_index in range(len(self.weights[layer])):
-				dot_product = np.dot(self.weights[layer][node_index], result)
-				bias = self.bias[layer][node_index]
-				ins[-1].append(dot_product + bias)
-				output[-1].append(self.sigma(dot_product + bias))
-			result = output[-1]
+		thresholds = []
+		acts = []
+		for layer in range(len(self.weights)):
+			weights = self.weights[layer]
+			bias = self.bias[layer]
+			threshold = np.dot(weights, result) + bias
+			thresholds.append(threshold)
+			result = self.sigma(threshold)
+			acts.append(result)
 
-		return output, ins
+		return thresholds, acts
 
 	def backpropogate(self, examples, labels):
 		# compute the Del values for output units using observed error (eq. 18.8)
@@ -50,11 +53,6 @@ class NeuralNetwork:
 		#18.8: w_i=w_i+\alpha(y-h_w(x))*h_w(x)(1-h_w(x))*x_i
 		#h_w(x)=Log(w*x)=1/(1+e^{-w*x})  ---Threshold function---
 
-		"""
-		for i in range(len(network)):
-			for j in range(len(network[i])):
-				network[i][j] = random.random() / 10.0  # small random number"""
-
 		for k in range(self.iterations): #repeat some number of times
 			self.alpha = (1000/1000+k)
 			for i in range(len(examples)):
@@ -62,43 +60,44 @@ class NeuralNetwork:
 				y = labels[i]
 
 				# feed forward
-				# a, ins = [[]]
-				a, ins = self.feedForward(x)
-
-				Del = dict()
+				thresholds, acts = self.feedForward(x)
 
 				# propagate deltas backward from output layer to input layer
 
-				# start by calculating the Dels
-				Del[len(self.layers)-1] = []
-				for j in range(self.layers[-1]):
-					Del[len(self.layers)-1].append(self.sigmaPrime(ins[-1][j])*(y-a[-1][j]))
+				# start by calculating the deltas of the output layer.
+				delta = dict()
+				delta[len(self.layers)-1] = (
+					self.sigmaPrime(thresholds[-1]) *
+					self.cost(y, acts[-1])
+				)
 
-				# propagate back through the rest of the layers
-				for l in range(len(self.layers)-1, 0, -1):
-					Del[l-1] = []
-					for j in range(self.layers[l]):
-						Del[l-1].append(self.sigmaPrime(ins[l-1][j]))
-						print Del[l][j]
-						Del[l-1][-1] *= sum(self.weights[l][j][m]*Del[l][j] for m in range(self.layers[l-1]))
-						#Del[j] = self.sigmaPrime(ins[j])*np.dot(self.weights[l][j], Del)
+				# Propagate back through the rest of the layers.
 
-				# update every weight in network using dels
+				# first layer does not have weights, so actually only
+				# len(self.layers)-1 with weights.
+				# len(self.layers)-2 would give us the correct indexing.
+				# however, we want to skip the last layer, so
+				# len(self.layers)-3.
+				for l in range(len(self.layers)-3, 0, -1):
+					delta[l] = (
+						self.sigmaPrime(thresholds[l]) *
+						np.dot(self.weights[l+1].transpose(), delta[l+1])
+					)
+
+				print delta
+
+				# update every weight in network using deltas.
 				for l in range(1, len(self.layers)):
 					for j in range(self.layers[l]):
 						for m in range(len(self.weights[l][j])):
-							# print "l-1"
-							# print a[m]
-							# print a[l-1]
-							# print m
-							# print a[l-1][m]
-							# print "DEL"
-							# print Del[j]
-							self.weights[l][j][m] = self.weights[l][j][m] + self.alpha*a[l-1][m]*Del[l][j]
+							self.weights[l][j][m] = self.weights[l][j][m] + self.alpha*acts[l-1][m]*delta[l][j]
 
-			self.numberCorrect(examples, labels)
+			# self.numberCorrect(examples, labels)
 
 		#learning rate: \alpha(t)=1000/(1000+t) seems good
+
+	def cost(self, label, activation):
+		return (label - activation)
 
 	def numberCorrect(self, images, labels):
 		count = 0
@@ -106,8 +105,8 @@ class NeuralNetwork:
 			image = images[i]
 			label = labels[i]
 			# feed forward
-			a, ins = self.feedForward(image)
-			index = a[-1].index(max(a[-1]))
+			thresholds, acts = self.feedForward(image)
+			index = acts[-1].index(max(acts[-1]))
 
 			if index == label:
 				count += 1
@@ -130,9 +129,9 @@ def main():
 	# Gets the training labels.
 	train_labels = train[1]
 
-	network = NeuralNetwork(10, [784, 11, 10])
+	network = NeuralNetwork(1, [784, 11, 10])
 	network.backpropogate(train_images[:200], train_labels[:200])
-	network.numberCorrect(dev[0][:1000], dev[1][:1000])
+	# network.numberCorrect(dev[0][:1000], dev[1][:1000])
 
 if __name__ == '__main__':
 	main()
