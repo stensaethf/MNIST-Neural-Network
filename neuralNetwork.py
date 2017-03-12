@@ -23,16 +23,18 @@ class NeuralNetwork:
 		# 	jth neuron in the second layer.
 		for i in range(1, len(self.layers)):
 			self.weights.append(np.zeros((self.layers[i], self.layers[i-1])))
-			self.bias.append([])
+			# self.bias.append(np.zeros(self.layers[i]))
+			self.bias.append(np.zeros((self.layers[i])))
 			for j in range(self.layers[i]):
-				self.bias[-1].append(random.random()/100)
+				self.bias[-1][j] = random.random()/100
 				for k in range(self.layers[i - 1]):
+					# self.bias[-1][j][k] = random.random()/100
 					self.weights[-1][j][k] = random.random()/100
 
 	def feedForward(self, result):
 		thresholds = []
 		acts = [result]
-		for layer in range(len(self.weights)):
+		for layer in range(len(self.layers)-1):
 			weights = self.weights[layer]
 			bias = self.bias[layer]
 			threshold = np.dot(weights, result) + bias
@@ -52,7 +54,8 @@ class NeuralNetwork:
 		# h_w(x)=Log(w*x)=1/(1+e^{-w*x})  ---Threshold function---
 
 		for t in range(self.iterations): #repeat some number of times
-			self.alpha = (1000/1000+t)
+			# self.alpha = (1000/1000+t)
+			self.alpha = 0.3
 			for e in range(len(examples)):
 				x = examples[e]
 				y = np.zeros(self.layers[-1])
@@ -65,8 +68,7 @@ class NeuralNetwork:
 
 				# start by calculating the deltas of the output layer.
 				# len(self.layers)-1 gives us the last layer
-				delta = dict()
-				delta[len(self.layers)-1] = (
+				delta = (
 					self.sigmaPrime(thresholds[-1]) *
 					self.error(y, acts[-1])
 				)
@@ -78,24 +80,48 @@ class NeuralNetwork:
 				# len(self.layers)-2 would give us the correct indexing.
 				# however, we want to skip the last layer, so
 				# len(self.layers)-2 to 1 (we write 0 because it doesn't execute it).
-				for l in range(len(self.layers)-2, 0, -1):
-					# we want weights going from layer l to l+1 and the
-					# delta associated with the target from the weight
-					# also thresholds are 0-indexed
-					delta[l] = (
-						self.sigmaPrime(thresholds[l-1]) *
-						np.dot(self.weights[l].transpose(), delta[l+1])
+
+				# each bias and weight has a change associated with it, so
+				# let's create matrices of the same structure as we already have.
+				weights_change = [np.zeros(weights.shape) for weights in self.weights]
+				bias_change = [np.zeros(bias.shape) for bias in self.bias]
+
+				# the change made to the weights are the dot product of the
+				# delta for that layer and the activations of the previous
+				# layer.
+				# activations for biases are always 1, so the change needed
+				# is just the delta.
+				# acts[-2]
+				weights_change[-1] = np.dot(delta, acts[-2].transpose())
+				bias_change[-1] = delta
+
+				# now we want to find the changes needed to be made to the
+				# rest of the weights and biases.
+				# want: delta_i = sigmaPrime(threshold_i) * dot(weight_i, delta_j)
+				# where delta_j is the next layer.
+				for l in range(2, len(self.layers)):
+					delta = (
+						self.sigmaPrime(thresholds[-l]) *
+						np.dot(self.weights[-l+1].transpose(), delta)
 					)
 
+					# once again, the bias change is just the delta, as acts
+					# would be all 1.
+					bias_change[-l] = delta
+					weights_change[-l] = np.dot(delta, acts[-l].transpose())
+
 				# update every weight in network using deltas.
-				for l in range(1, len(self.layers)-1):
-					for j in range(self.layers[l]-1):
-						for m in range(self.layers[l-1]-1):
-							self.weights[l-1][j][m] += self.alpha * acts[l - 1][m] * delta[l][j]
+				for l in range(len(self.layers)-1):
+					self.weights[l] = (
+						self.weights[l] + 
+						self.alpha * weights_change[l]
+					)
+					self.bias[l] = (
+						self.bias[l] + 
+						self.alpha * bias_change[l]
+					)
 
 			self.numberCorrect(examples, labels)
-
-		#learning rate: \alpha(t)=1000/(1000+t) seems good
 
 	def error(self, label, activation):
 		return (label - activation)
@@ -130,8 +156,8 @@ def main():
 	# Gets the training labels.
 	train_labels = train[1]
 
-	network = NeuralNetwork(5, [784, 10, 10, 10])
-	network.backpropogate(train_images[:200], train_labels[:200])
+	network = NeuralNetwork(5, [784, 10, 10])
+	network.backpropogate(train_images, train_labels)
 	# network.numberCorrect(dev[0][:1000], dev[1][:1000])
 
 if __name__ == '__main__':
