@@ -72,8 +72,8 @@ class NeuralNetwork:
 		# start by calculating the deltas of the output layer.
 		# len(self.layers)-1 gives us the last layer
 		delta = (
-			self.error(y, acts[-1]) *
-			self.sigmaPrime(thresholds[-1])
+			self.sigmaPrime(thresholds[-1]) *
+			self.error(y, acts[-1])
 		)
 
 		# Propagate back through the rest of the layers.
@@ -100,8 +100,8 @@ class NeuralNetwork:
 		# rest of the weights and biases.
 		for l in range(2, len(self.layers)):
 			delta = (
-				np.dot(self.weights[-l+1].transpose(), delta) *
-				self.sigmaPrime(thresholds[-l])
+				self.sigmaPrime(thresholds[-l]) *
+				np.dot(self.weights[-l+1].transpose(), delta)
 			)
 
 			bias_change[-l] = delta
@@ -180,7 +180,7 @@ def main():
 	# Gets the training labels.
 	train_labels = train[1]
 
-	network = NeuralNetwork(5, [784, 30, 10])
+	network = NeuralNetwork(5, [784, 10, 10])
 	network.train(train_images, train_labels)
 	# try it on the dev set.
 	network.numberCorrect(dev[0], dev[1])
