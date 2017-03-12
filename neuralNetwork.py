@@ -4,6 +4,16 @@
 
 import loadData, numpy as np, random
 
+# TODO:
+# 1. play around with alpha (learning rate).
+# 2. play around with size of random numbers.
+# 3. store weights/bias matrices.
+# 4. different learning methods? stochastic gradient descent?
+# 5. move reshaping into data loader or some other function?
+# 6. comment.
+# 7. <something />
+
+# Random seed. Remove when done.
 random.seed(50)
 
 class NeuralNetwork:
@@ -68,16 +78,15 @@ class NeuralNetwork:
 
 		# Propagate back through the rest of the layers.
 
-		# first layer does not have weights, so actually only
-		# len(self.layers)-1 with weights.
-		# len(self.layers)-2 would give us the correct indexing.
-		# however, we want to skip the last layer, so
-		# len(self.layers)-2 to 1 (we write 0 because it doesn't execute it).
-
 		# each bias and weight has a change associated with it, so
 		# let's create matrices of the same structure as we already have.
-		weights_change = [np.zeros(weights.shape) for weights in self.weights]
-		bias_change = [np.zeros(bias.shape) for bias in self.bias]
+		weights_change = []
+		for weights in self.weights:
+			weights_change.append(np.zeros(weights.shape))
+
+		bias_change = []
+		for bias in self.bias:
+			bias_change.append(np.zeros(bias.shape))
 
 		# the change made to the weights are the dot product of the
 		# delta for that layer and the activations of the previous
