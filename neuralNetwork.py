@@ -104,12 +104,10 @@ class NeuralNetwork:
 				self.sigmaPrime(thresholds[-l])
 			)
 
-			# once again, the bias change is just the delta, as acts
-			# would be all 1.
 			bias_change[-l] = delta
 			weights_change[-l] = np.dot(delta, acts[-l-1].transpose())
 
-		# update every weight in network using deltas.
+		# update every weight and bias in network.
 		for l in range(len(self.layers)-1):
 			self.weights[l] = (
 				self.weights[l] + 
@@ -127,6 +125,7 @@ class NeuralNetwork:
 
 			# shuffle the examples and labels to that we do not train on
 			# them in the same order every iteration.
+			# good practice?
 			examples_new = []
 			labels_new = []
 			index_shuf = range(len(examples))
@@ -145,6 +144,7 @@ class NeuralNetwork:
 
 				self.backpropagate(x, y)
 
+			# checks how many examples we currently classify correctly.
 			self.numberCorrect(examples, labels)
 
 	def error(self, label, activation):
