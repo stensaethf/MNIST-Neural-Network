@@ -130,7 +130,12 @@ class NeuralNetwork:
 
 		batch_size = len(examples)
 
-		changes = map(self.getWeightsChange, examples, labels)
+		changes = []
+
+		for i in range(batch_size):
+			changes.append(self.getWeightsChange(examples[i], labels[i]))
+
+		#changes = list(map(self.getWeightsChange, examples, labels))
 
 		total_weights_change = np.sum(changes[0], axis=0)
 		total_bias_change = np.sum(changes[1], axis=0)
@@ -174,11 +179,14 @@ class NeuralNetwork:
 			examples, labels = self.doubleShuffle(examples, labels)
 
 			maxSize = len(examples)
-			for e in range(len(examples)/batch_size):
-				exs = [np.reshape(examples[i], (784, 1)) for i in range(e, min(e+batch_size, maxSize))]
-				labs = [np.zeros((self.layers[-1], 1)) for i in range(e, min(e+batch_size, maxSize))]
-				for i in range(e, min(e+batch_size, maxSize)):
-					labs[i-e][labels[i]] = 1.0
+			for e in range(0, maxSize, batch_size):
+				num_in_batch = batch_size
+				if e + num_in_batch >= maxSize:
+					num_in_batch = maxSize - 1 - e
+				exs = [np.reshape(examples[e+i], (784, 1)) for i in range(num_in_batch)]
+				labs = [np.zeros((self.layers[-1], 1)) for i in range(num_in_batch)]
+				for i in range(num_in_batch):
+					labs[i][labels[e+i]] = 1.0
 
 				self.batchPropagate(exs, labs)
 
@@ -233,8 +241,8 @@ def main():
 	train_labels = train[1]
 
 	network = NeuralNetwork(10, [784, 100, 10])
-	network.train(train_images[:200], train_labels[:200], 0.3)
-	#network.batchTrain(train_images[:200], train_labels[:200], 0.3, 10)
+	#network.train(train_images[:200], train_labels[:200], 0.3)
+	network.batchTrain(train_images[:200], train_labels[:200], 0.3, 10)
 	# try it on the dev set.
 	network.numberCorrect(dev[0], dev[1])
 
