@@ -120,6 +120,7 @@ class NeuralNetwork:
 
 	def getWeightsChange(self, x, y):
 		# feed forward
+		print len(x)
 		thresholds, acts = self.feedForward(x)
 
 		# propagate deltas backward from output layer to input layer
@@ -195,16 +196,7 @@ class NeuralNetwork:
 			# shuffle the examples and labels to that we do not train on
 			# them in the same order every iteration.
 			# good practice?
-			examples_new = []
-			labels_new = []
-			index_shuf = range(len(examples))
-			random.shuffle(index_shuf)
-			for i in index_shuf:
-				examples_new.append(examples[i])
-				labels_new.append(labels[i])
-
-			examples = examples_new
-			labels = labels_new
+			examples, labels = self.doubleShuffle(examples, labels)
 
 			for e in range(len(examples)):
 				x = np.reshape(examples[e], (784, 1))
@@ -221,17 +213,7 @@ class NeuralNetwork:
 		for t in range(self.iterations):
 			self.alpha = alpha - (alpha*t/self.iterations)
 
-			examples_new = []
-			labels_new = []
-			index_shuf = range(len(examples))
-			random.shuffle(index_shuf)
-			# randomly shuffle the input
-			for i in index_shuf:
-				examples_new.append(examples[i])
-				labels_new.append(labels[i])
-
-			examples = examples_new
-			labels = labels_new
+			examples, labels = self.doubleShuffle(examples, labels)
 
 			maxSize = len(examples)
 			for e in range(len(examples)/batch_size):
@@ -239,8 +221,6 @@ class NeuralNetwork:
 				labs = [np.zeros((self.layers[-1], 1)) for i in range(e,min(e+batch_size, maxSize))]
 				for i in range(e, min(e+batch_size, maxSize)):
 					labs[i-e][labels[i]] = 1.0
-
-				print labs
 
 				self.batchPropagate(exs, labs)
 
@@ -266,6 +246,19 @@ class NeuralNetwork:
 
 		print str(count) + "/" + str(len(images))
 
+	def doubleShuffle(self, list1, list2):
+		""" shuffles two corresponding lists of equal length """
+		list1new = []
+		list2new = []
+		index_shuf = range(len(list1))
+		random.shuffle(index_shuf)
+		# randomly shuffle the input
+		for i in index_shuf:
+			list1new.append(list1[i])
+			list2new.append(list2[i])
+
+		return list1new, list2new
+
 	def sigma(self, x):
 		return 1.0 / (1 + np.exp(-x))
 
@@ -282,8 +275,8 @@ def main():
 	train_labels = train[1]
 
 	network = NeuralNetwork(10, [784, 100, 10])
-	#network.train(train_images[:200], train_labels[:200], 0.3)
-	network.batchTrain(train_images[:200], train_labels[:200], 0.3, 10)
+	network.train(train_images[:200], train_labels[:200], 0.3)
+	#network.batchTrain(train_images[:200], train_labels[:200], 0.3, 10)
 	# try it on the dev set.
 	network.numberCorrect(dev[0], dev[1])
 
