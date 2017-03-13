@@ -121,7 +121,7 @@ class NeuralNetwork:
 	def train(self, examples, labels):
 		for t in range(self.iterations): #repeat some number of times
 			# self.alpha = (1000/1000+t)
-			self.alpha = 0.3
+			self.alpha = 0.7 - (.7*t/self.iterations)
 
 			# shuffle the examples and labels to that we do not train on
 			# them in the same order every iteration.
@@ -180,7 +180,7 @@ def main():
 	# Gets the training labels.
 	train_labels = train[1]
 
-	network = NeuralNetwork(5, [784, 10, 10])
+	network = NeuralNetwork(10, [784, 100, 10])
 	network.train(train_images, train_labels)
 	# try it on the dev set.
 	network.numberCorrect(dev[0], dev[1])
