@@ -3,6 +3,7 @@
 # 03.11.17
 
 import loadData, numpy as np, random
+from operator import add
 
 # TODO:
 # 1. play around with alpha (learning rate).
@@ -126,29 +127,31 @@ class NeuralNetwork:
 	def batchPropagate(self, examples, labels):
 		""" Does backpropagation in a batch, updating only after feeding forward all the examples """
 		""" Similar to backpropagation, but it only updates weights
-			after looking at all of the examples """
+		after looking at all of the examples """
 
 		batch_size = len(examples)
 
-		changes = []
+		total_weights_change = []
+		total_bias_change = []
 
 		for i in range(batch_size):
-			changes.append(self.getWeightsChange(examples[i], labels[i]))
-
-		#changes = list(map(self.getWeightsChange, examples, labels))
-
-		total_weights_change = np.sum(changes[0], axis=0)
-		total_bias_change = np.sum(changes[1], axis=0)
+			change = self.getWeightsChange(examples[i], labels[i])
+			if i == 0:
+				total_weights_change = change[0]
+				total_bias_change = change[1]
+			else:
+				total_weights_change = map(add, total_weights_change, change[0])
+				total_bias_change = map(add, total_bias_change, change[1])
 
 		# update every weight and bias in network.
 		for l in range(len(self.layers)-1):
 			self.weights[l] = (
 				self.weights[l] +
-				self.alpha / batch_size * total_weights_change[l]
+				self.alpha * total_weights_change[l] / batch_size
 			)
 			self.bias[l] = (
 				self.bias[l] +
-				self.alpha / batch_size * total_bias_change[l]
+				self.alpha * total_bias_change[l] / batch_size
 			)
 
 	def train(self, examples, labels, alpha):
@@ -183,6 +186,8 @@ class NeuralNetwork:
 				num_in_batch = batch_size
 				if e + num_in_batch >= maxSize:
 					num_in_batch = maxSize - 1 - e
+				if num_in_batch == 0:
+					continue
 				exs = [np.reshape(examples[e+i], (784, 1)) for i in range(num_in_batch)]
 				labs = [np.zeros((self.layers[-1], 1)) for i in range(num_in_batch)]
 				for i in range(num_in_batch):
@@ -192,7 +197,6 @@ class NeuralNetwork:
 
 			# checks how many examples we currently classify correctly.
 			self.numberCorrect(examples, labels)
-
 
 	def error(self, label, activation):
 		return (label - activation)
@@ -241,8 +245,8 @@ def main():
 	train_labels = train[1]
 
 	network = NeuralNetwork(10, [784, 100, 10])
-	#network.train(train_images[:200], train_labels[:200], 0.3)
-	network.batchTrain(train_images[:200], train_labels[:200], 0.3, 10)
+	#network.train(train_images[:1000], train_labels[:1000], 0.3)
+	network.batchTrain(train_images, train_labels, 0.3, 10)
 	# try it on the dev set.
 	network.numberCorrect(dev[0], dev[1])
 
