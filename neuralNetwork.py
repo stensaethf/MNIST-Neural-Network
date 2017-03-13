@@ -118,10 +118,79 @@ class NeuralNetwork:
 				self.alpha * bias_change[l]
 			)
 
-	def train(self, examples, labels):
+	def getWeightsChange(self, x, y):
+		# feed forward
+		thresholds, acts = self.feedForward(x)
+
+		# propagate deltas backward from output layer to input layer
+
+		# start by calculating the deltas of the output layer.
+		# len(self.layers)-1 gives us the last layer
+		delta = (
+			self.sigmaPrime(thresholds[-1]) *
+			self.error(y, acts[-1])
+		)
+
+		# Propagate back through the rest of the layers.
+
+		# each bias and weight has a change associated with it, so
+		# let's create matrices of the same structure as we already have.
+		weights_change = []
+		for weights in self.weights:
+			weights_change.append(np.zeros(weights.shape))
+
+		bias_change = []
+		for bias in self.bias:
+			bias_change.append(np.zeros(bias.shape))
+
+		# the change made to the weights are the dot product of the
+		# delta for that layer and the activations of the previous
+		# layer.
+		# activations for biases are always 1, so the change needed
+		# is just the delta.
+		weights_change[-1] = np.dot(delta, acts[-2].transpose())
+		bias_change[-1] = delta
+
+		# now we want to find the changes needed to be made to the
+		# rest of the weights and biases.
+		for l in range(2, len(self.layers)):
+			delta = (
+				self.sigmaPrime(thresholds[-l]) *
+				np.dot(self.weights[-l + 1].transpose(), delta)
+			)
+
+			bias_change[-l] = delta
+			weights_change[-l] = np.dot(delta, acts[-l - 1].transpose())
+
+		return weights_change, bias_change
+
+	def batchPropagate(self, examples, labels):
+		""" Does backpropagation in a batch, updating only after feeding forward all the examples """
+		""" Similar to backpropagation, but it only updates weights
+			after looking at all of the examples """
+
+		batch_size = len(examples)
+
+		changes = map(self.getWeightsChange, examples, labels)
+
+		total_weights_change = np.sum(changes[0], axis=0)
+		total_bias_change = np.sum(changes[1], axis=0)
+
+		# update every weight and bias in network.
+		for l in range(len(self.layers)-1):
+			self.weights[l] = (
+				self.weights[l] +
+				self.alpha / batch_size * total_weights_change[l]
+			)
+			self.bias[l] = (
+				self.bias[l] +
+				self.alpha / batch_size * total_bias_change[l]
+			)
+
+	def train(self, examples, labels, alpha):
 		for t in range(self.iterations): #repeat some number of times
 			# self.alpha = (1000/1000+t)
-			self.alpha = 0.7 - (.7*t/self.iterations)
+			self.alpha = alpha - (alpha*t/self.iterations)
 
 			# shuffle the examples and labels to that we do not train on
 			# them in the same order every iteration.
@@ -146,6 +215,38 @@ class NeuralNetwork:
 
 			# checks how many examples we currently classify correctly.
 			self.numberCorrect(examples, labels)
+
+	def batchTrain(self, examples, labels, alpha, batch_size):
+		""" Similar to training, but executes in batches """
+		for t in range(self.iterations):
+			self.alpha = alpha - (alpha*t/self.iterations)
+
+			examples_new = []
+			labels_new = []
+			index_shuf = range(len(examples))
+			random.shuffle(index_shuf)
+			# randomly shuffle the input
+			for i in index_shuf:
+				examples_new.append(examples[i])
+				labels_new.append(labels[i])
+
+			examples = examples_new
+			labels = labels_new
+
+			maxSize = len(examples)
+			for e in range(len(examples)/batch_size):
+				exs = [np.reshape(examples[t], (784, 1)) for i in range(e,min(e+batch_size, maxSize))]
+				labs = [np.zeros((self.layers[-1], 1)) for i in range(e,min(e+batch_size, maxSize))]
+				for i in range(e, min(e+batch_size, maxSize)):
+					labs[i-e][labels[i]] = 1.0
+
+				print labs
+
+				self.batchPropagate(exs, labs)
+
+			# checks how many examples we currently classify correctly.
+			self.numberCorrect(examples, labels)
+
 
 	def error(self, label, activation):
 		return (label - activation)
@@ -181,7 +282,8 @@ def main():
 	train_labels = train[1]
 
 	network = NeuralNetwork(10, [784, 100, 10])
-	network.train(train_images, train_labels)
+	#network.train(train_images[:200], train_labels[:200], 0.3)
+	network.batchTrain(train_images[:200], train_labels[:200], 0.3, 10)
 	# try it on the dev set.
 	network.numberCorrect(dev[0], dev[1])
 
