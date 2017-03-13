@@ -175,7 +175,7 @@ class NeuralNetwork:
 
 			maxSize = len(examples)
 			for e in range(len(examples)/batch_size):
-				exs = [np.reshape(examples[t], (784, 1)) for i in range(e, min(e+batch_size, maxSize))]
+				exs = [np.reshape(examples[i], (784, 1)) for i in range(e, min(e+batch_size, maxSize))]
 				labs = [np.zeros((self.layers[-1], 1)) for i in range(e, min(e+batch_size, maxSize))]
 				for i in range(e, min(e+batch_size, maxSize)):
 					labs[i-e][labels[i]] = 1.0
