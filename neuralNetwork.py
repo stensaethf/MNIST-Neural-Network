@@ -64,48 +64,7 @@ class NeuralNetwork:
 		x = example
 		y = label
 
-		# feed forward
-		thresholds, acts = self.feedForward(x)
-
-		# propagate deltas backward from output layer to input layer
-
-		# start by calculating the deltas of the output layer.
-		# len(self.layers)-1 gives us the last layer
-		delta = (
-			self.sigmaPrime(thresholds[-1]) *
-			self.error(y, acts[-1])
-		)
-
-		# Propagate back through the rest of the layers.
-
-		# each bias and weight has a change associated with it, so
-		# let's create matrices of the same structure as we already have.
-		weights_change = []
-		for weights in self.weights:
-			weights_change.append(np.zeros(weights.shape))
-
-		bias_change = []
-		for bias in self.bias:
-			bias_change.append(np.zeros(bias.shape))
-
-		# the change made to the weights are the dot product of the
-		# delta for that layer and the activations of the previous
-		# layer.
-		# activations for biases are always 1, so the change needed
-		# is just the delta.
-		weights_change[-1] = np.dot(delta, acts[-2].transpose())
-		bias_change[-1] = delta
-
-		# now we want to find the changes needed to be made to the
-		# rest of the weights and biases.
-		for l in range(2, len(self.layers)):
-			delta = (
-				self.sigmaPrime(thresholds[-l]) *
-				np.dot(self.weights[-l+1].transpose(), delta)
-			)
-
-			bias_change[-l] = delta
-			weights_change[-l] = np.dot(delta, acts[-l-1].transpose())
+		weights_change, bias_change = self.getWeightsChange(x, y)
 
 		# update every weight and bias in network.
 		for l in range(len(self.layers)-1):
@@ -120,7 +79,6 @@ class NeuralNetwork:
 
 	def getWeightsChange(self, x, y):
 		# feed forward
-		print len(x)
 		thresholds, acts = self.feedForward(x)
 
 		# propagate deltas backward from output layer to input layer
@@ -217,8 +175,8 @@ class NeuralNetwork:
 
 			maxSize = len(examples)
 			for e in range(len(examples)/batch_size):
-				exs = [np.reshape(examples[t], (784, 1)) for i in range(e,min(e+batch_size, maxSize))]
-				labs = [np.zeros((self.layers[-1], 1)) for i in range(e,min(e+batch_size, maxSize))]
+				exs = [np.reshape(examples[t], (784, 1)) for i in range(e, min(e+batch_size, maxSize))]
+				labs = [np.zeros((self.layers[-1], 1)) for i in range(e, min(e+batch_size, maxSize))]
 				for i in range(e, min(e+batch_size, maxSize)):
 					labs[i-e][labels[i]] = 1.0
 
