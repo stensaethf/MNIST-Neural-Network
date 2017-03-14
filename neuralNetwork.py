@@ -221,41 +221,39 @@ class NeuralNetwork:
 	def sigmoidPrime(self, x):
 		return self.sigmoid(x)*(1.0-self.sigmoid(x))
 
-	def storeWeightsAndBias(self):
-		f = open("neuralNetwork-weights-bias", "w")
+	def saveWeightsAndBias(self, filename):
+		f = open(filename, "w")
 		cPickle.dump({
 			'weights' : self.weights,
 			'bias' : self.bias
 		}, f)
 		f.close()
 
+	def loadWeightsAndBias(self, filename):
+		f = open(filename, "r")
+		weights_bias = cPickle.load(f)
+		f.close()
+		weights = weights_bias['weights']
+		bias = weights_bias['bias']
+
+		self.weights = weights
+		self.bias = bias
+
 def main():
-	# # Loads the train, dev and test sets.
-	# # 50,000, 10,000, 10,000
+	# Loads the train, dev and test sets.
+	# 50,000, 10,000, 10,000
 	train, dev, test = loadData.loadMNIST()
 	# Gets the training images.
 	train_images = train[0]
 	# Gets the training labels.
 	train_labels = train[1]
 
-	# 0.1
-	network = NeuralNetwork(10, [784, 397, 10])
-	network.train(train_images, train_labels, 0.1)
-	# network.batchTrain(train_images, train_labels, 0.3, 10)
-	# try it on the dev set.
-	network.numberCorrect(dev[0], dev[1])
-
-	# network.storeWeightsAndBias()
-
-	# f = open("neuralNetwork-weights-bias", "r")
-	# weights_bias = cPickle.load(f)
-	# f.close()
-	# weights = weights_bias['weights']
-	# bias = weights_bias['bias']
-
-	# network.weights = weights
-	# network.bias = bias
-	# network.numberCorrect(dev[0], dev[1])
+	for i in range(1, 10, 2):
+		network = NeuralNetwork(10, [784, 397, 10])
+		# network.train(train_images, train_labels, 0.1)
+		network.batchTrain(train_images, train_labels, i/10.0, 100)
+		# try it on the dev set.
+		network.numberCorrect(dev[0], dev[1])
 
 if __name__ == '__main__':
 	main()
