@@ -317,6 +317,9 @@ def main():
 				for j in range(i+1, i+1+int(sys.argv[i])):
 					layerlist.insert(j, int(sys.argv[j]))
 				i += int(sys.argv[i])
+			elif sys.argv[i] == '--help':
+				printUsage()
+				return 0
 
 			else:
 				printUsage()
