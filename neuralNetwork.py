@@ -289,12 +289,10 @@ def main():
 	# Gets the training labels.
 	train_labels = train[1]
 
-	for i in range(1, 10, 2):
-		network = NeuralNetwork(10, [784, 397, 10])
-		# network.train(train_images, train_labels, 0.1)
-		network.batchTrain(train_images, train_labels, i/10.0, 100)
-		# try it on the dev set.
-		network.numberCorrect(dev[0], dev[1])
+	network = NeuralNetwork(10, [784, 397, 10])
+	network.train(train_images, train_labels, 0.3)
+	# try it on the dev set.
+	network.numberCorrect(dev[0], dev[1])
 
 if __name__ == '__main__':
 	main()
