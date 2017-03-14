@@ -3,7 +3,7 @@
 # Eric Walker, Frederik Roenn Stensaeth.
 # 03.15.17
 
-import loadData, numpy as np, random, cPickle
+import loadData, numpy as np, random, cPickle, sys
 from operator import add
 
 class NeuralNetwork:
@@ -280,7 +280,49 @@ class NeuralNetwork:
 		self.weights = weights
 		self.bias = bias
 
+def printUsage():
+	print """Invalid arguments. Usage:\n
+--batch\t\t\tsets mode to minibatch (default false)\n
+batch-size [size]\tsets the batch size for minibatch (default 100)\n
+alpha [alpha]\t\tsets the alpha (default 0.3)\n
+iterations [iterations]\tsets the number of iterations to run (default 10)\n
+layers [layers]\t\tdefine the number of hidden layers as the first param
+\t\t\tthen list the hidden layers. e.g. layers 2 100 50 makes 2 hidden layers
+\t\t\t(default 1 hidden layer with 100 neurons)"""
+
 def main():
+	# Check the command line arguments
+	regular = True
+	alpha = 0.3
+	batch_size = 100
+	iterations = 10
+	layerlist = [784, 100, 10]
+	if len(sys.argv) > 1:
+		i = 1
+		while i < len(sys.argv):
+			if sys.argv[i] == '--batch':
+				regular = False
+			elif sys.argv[i] == 'batch-size':
+				batch_size = int(sys.argv[i+1])
+				i += 1
+			elif sys.argv[i] == 'alpha':
+				alpha = float(sys.argv[i+1])
+				i += 1
+			elif sys.argv[i] == 'iterations':
+				iterations = int(sys.argv[i+1])
+				i += 1
+			elif sys.argv[i] == 'layers':
+				layerlist = [784, 10]
+				i += 1
+				for j in range(i+1, i+1+int(sys.argv[i])):
+					layerlist.insert(j, int(sys.argv[j]))
+				i += int(sys.argv[i])
+
+			else:
+				printUsage()
+				return -1
+			i += 1
+
 	# Loads the train, dev and test sets.
 	# 50,000, 10,000, 10,000
 	train, dev, test = loadData.loadMNIST()
@@ -289,8 +331,11 @@ def main():
 	# Gets the training labels.
 	train_labels = train[1]
 
-	network = NeuralNetwork(10, [784, 397, 10])
-	network.train(train_images, train_labels, 0.3)
+	network = NeuralNetwork(iterations, layerlist)
+	if regular:
+		network.train(train_images, train_labels, alpha)
+	else:
+		network.batchTrain(train_images, train_labels, alpha, batch_size)
 	# try it on the dev set.
 	network.numberCorrect(dev[0], dev[1])
 
