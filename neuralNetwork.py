@@ -46,11 +46,8 @@ class NeuralNetwork:
 
 	def feedForward(self, result):
 		"""
-		xx
-
-		@params result - xx
-		@return thresholds - xx
-		@return acts - xx
+		Feeds forward an example through the network.
+		Returns the various thresholds and activations found along the way.
 		"""
 		thresholds = []
 		acts = [result]
@@ -65,24 +62,14 @@ class NeuralNetwork:
 
 	def backpropagate(self, example, label):
 		"""
-		xx
-
-		@params example - xx
-		@params label - xx
-		@return n/a.
+		Performs backpropagation on an example and label.
+		Updates the weights and biases in the neural network by propagating
+		backwards the change calculated for the output layer.
 		"""
-		# compute the Del values for output units using observed error (eq. 18.8)
-		# starting at output layer, repeat for each hidden layer until earliest reached
-			# propagate the Del values back to previous layer
-			# update the weights between the two layers
-		# Del_j = g'(in_j)\sum_k{w_{j,k}Del_k}
-		# w_{j,k}=w_{j,k}+\alpha*a_j*Del_k
-		# 18.8: w_i=w_i+\alpha(y-h_w(x))*h_w(x)(1-h_w(x))*x_i
-		# h_w(x)=Log(w*x)=1/(1+e^{-w*x})  ---Threshold function---
-
+		# Find changes that needs to be made to the weights and biases.
 		weights_change, bias_change = self.getWeightsChange(example, label)
 
-		# update every weight and bias in network.
+		# Update every weight and bias in network with the found changes.
 		for l in range(len(self.layers)-1):
 			self.weights[l] = (
 				self.weights[l] + 
@@ -95,28 +82,20 @@ class NeuralNetwork:
 
 	def getWeightsChange(self, x, y):
 		"""
-		xx
-
-		@params x - xx
-		@params y - xx
-		@return weights_change - xx
-		@return bias_change - xx
+		Calcualates the changes needed to be made to each weight and bias
+		given an x (example) and a y (label).
 		"""
-		# feed forward
+		# Feed forward the x value to find thresholds and activations.
 		thresholds, acts = self.feedForward(x)
 
-		# propagate deltas backward from output layer to input layer
-
-		# start by calculating the deltas of the output layer.
-		# len(self.layers)-1 gives us the last layer
+		# Propagate deltas backward from output layer to input layer.
+		# Start by calculating the deltas of the output layer.
 		delta = (
 			self.sigmoidPrime(thresholds[-1]) *
 			self.error(y, acts[-1])
 		)
 
-		# Propagate back through the rest of the layers.
-
-		# each bias and weight has a change associated with it, so
+		# Each bias and weight has a change associated with it, so
 		# let's create matrices of the same structure as we already have.
 		weights_change = []
 		for weights in self.weights:
@@ -126,16 +105,16 @@ class NeuralNetwork:
 		for bias in self.bias:
 			bias_change.append(np.zeros(bias.shape))
 
-		# the change made to the weights are the dot product of the
+		# The change made to the weights are the dot product of the
 		# delta for that layer and the activations of the previous
 		# layer.
-		# activations for biases are always 1, so the change needed
+		# Activations for biases are always 1, so the change needed
 		# is just the delta.
 		weights_change[-1] = np.dot(delta, acts[-2].transpose())
 		bias_change[-1] = delta
 
-		# now we want to find the changes needed to be made to the
-		# rest of the weights and biases.
+		# Now we want to find the changes needed to be made to the
+		# rest of the weights and biases and apply them.
 		for l in range(2, len(self.layers)):
 			delta = (
 				self.sigmoidPrime(thresholds[-l]) *
@@ -149,22 +128,18 @@ class NeuralNetwork:
 
 	def batchPropagate(self, examples, labels):
 		"""
-		xx
-
-		@params examples - xx
-		@params labels - xx
-		@return n/a.
+		Performs backpropagation on a batch of examples and labels.
+		Updates the weights and biases only after feeding forward all the
+		examples.
 		"""
-
-		""" Does backpropagation in a batch, updating only after feeding forward all the examples """
-		""" Similar to backpropagation, but it only updates weights
-		after looking at all of the examples """
 
 		batch_size = len(examples)
 
 		total_weights_change = []
 		total_bias_change = []
 
+		# Find the weigth changes for the different examples and labels
+		# in the batch.
 		for i in range(batch_size):
 			change = self.getWeightsChange(examples[i], labels[i])
 			if i == 0:
@@ -174,7 +149,7 @@ class NeuralNetwork:
 				total_weights_change = map(add, total_weights_change, change[0])
 				total_bias_change = map(add, total_bias_change, change[1])
 
-		# update every weight and bias in network.
+		# Update weights and biases in network with the changes found.
 		for l in range(len(self.layers)-1):
 			self.weights[l] = (
 				self.weights[l] +
