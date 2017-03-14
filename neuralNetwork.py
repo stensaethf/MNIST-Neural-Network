@@ -6,11 +6,8 @@ import loadData, numpy as np, random, cPickle
 from operator import add
 
 # TODO:
-# 1. play around with alpha (learning rate).
-# 2. play around with size of random numbers.
-# 3. store weights/bias matrices.
-# 6. comment.
-# 7. <something />
+# 1. comment.
+# 2. README file
 
 # Random seed. Remove when done.
 random.seed(50)
@@ -46,7 +43,7 @@ class NeuralNetwork:
 			bias = self.bias[layer]
 			threshold = np.dot(weights, result) + bias
 			thresholds.append(threshold)
-			result = self.sigma(threshold)
+			result = self.sigmoid(threshold)
 			acts.append(result)
 		return thresholds, acts
 
@@ -82,7 +79,7 @@ class NeuralNetwork:
 		# start by calculating the deltas of the output layer.
 		# len(self.layers)-1 gives us the last layer
 		delta = (
-			self.sigmaPrime(thresholds[-1]) *
+			self.sigmoidPrime(thresholds[-1]) *
 			self.error(y, acts[-1])
 		)
 
@@ -110,7 +107,7 @@ class NeuralNetwork:
 		# rest of the weights and biases.
 		for l in range(2, len(self.layers)):
 			delta = (
-				self.sigmaPrime(thresholds[-l]) *
+				self.sigmoidPrime(thresholds[-l]) *
 				np.dot(self.weights[-l + 1].transpose(), delta)
 			)
 
@@ -218,11 +215,11 @@ class NeuralNetwork:
 
 		return list1new, list2new
 
-	def sigma(self, x):
+	def sigmoid(self, x):
 		return 1.0 / (1 + np.exp(-x))
 
-	def sigmaPrime(self, x):
-		return self.sigma(x)*(1.0-self.sigma(x))
+	def sigmoidPrime(self, x):
+		return self.sigmoid(x)*(1.0-self.sigmoid(x))
 
 	def storeWeightsAndBias(self):
 		f = open("neuralNetwork-weights-bias", "w")
@@ -241,12 +238,14 @@ def main():
 	# Gets the training labels.
 	train_labels = train[1]
 
-	network = NeuralNetwork(2, [784, 10, 10])
-	network.train(train_images, train_labels, 0.3)
+	# 0.1
+	network = NeuralNetwork(10, [784, 397, 10])
+	network.train(train_images, train_labels, 0.1)
 	# network.batchTrain(train_images, train_labels, 0.3, 10)
 	# try it on the dev set.
 	network.numberCorrect(dev[0], dev[1])
-	network.storeWeightsAndBias()
+
+	# network.storeWeightsAndBias()
 
 	# f = open("neuralNetwork-weights-bias", "r")
 	# weights_bias = cPickle.load(f)
