@@ -1,6 +1,6 @@
 # NeuralNetwork
 # Neural network implementation.
-# 03.11.17
+# 03.15.17
 
 import loadData, numpy as np, random, cPickle
 from operator import add
@@ -14,6 +14,17 @@ random.seed(50)
 
 class NeuralNetwork:
 	def __init__(self, iterations, layers):
+		"""
+        Constructor for the neural network.
+        Sets up the weights and biases.
+		
+		@params iterations - number of iterations to be run.
+        @params layers - list of the size of the layers in the network.
+        	Example: [5, 10] - input and output layers have 5 and 10
+        	neurons respectively. 
+        @retrns n/a
+        """
+
 		# initialize the neural network as a dict of dicts of weights
 		self.iterations = iterations
 		self.layers = layers
