@@ -21,23 +21,21 @@ class NeuralNetwork:
 		@params iterations - number of iterations to be run.
         @params layers - list of the size of the layers in the network.
         	Example: [5, 10] - input and output layers have 5 and 10
-        	neurons respectively. 
-        @retrns n/a
+        	neurons respectively.
+        @return n/a.
         """
-
-		# initialize the neural network as a dict of dicts of weights
 		self.iterations = iterations
 		self.layers = layers
-		self.weights = []
-		# bias[layer][node]
-		# we do not count the input layer, so layer = 0 is the layer after
-		# the input layer.
-		self.bias = []
 
-		# weights[0] --> matrix storing weights connecting first and second
-		# neuron layers.
-		# weights[0][j][k] --> kth neuron in the first layer connecting to
-		# 	jth neuron in the second layer.
+		# Sets up the matrices used for storing the weights and biases.
+		# Example: weights[0] is the matrix storing weights connecting the
+		# 	first and second layers of neurons.
+		# Example: weights[0][j][k] is the weight connecting the kth neuron
+		# 	in the first layer to the jth neuron in the second layer.
+		# The initial weights and biases are random in the range: [-0.5, 0.5].
+		self.weights = []
+		self.bias = []
+		# The first layer has no connections entering it, so we skip it.
 		for i in range(1, len(self.layers)):
 			self.weights.append(np.zeros((self.layers[i], self.layers[i-1])))
 			self.bias.append(np.zeros((self.layers[i], 1)))
@@ -47,6 +45,13 @@ class NeuralNetwork:
 					self.weights[-1][j][k] = random.random() - 0.5
 
 	def feedForward(self, result):
+		"""
+		xx
+
+		@params result - xx
+		@return thresholds - xx
+		@return acts - xx
+		"""
 		thresholds = []
 		acts = [result]
 		for layer in range(len(self.weights)):
@@ -59,6 +64,13 @@ class NeuralNetwork:
 		return thresholds, acts
 
 	def backpropagate(self, example, label):
+		"""
+		xx
+
+		@params example - xx
+		@params label - xx
+		@return n/a.
+		"""
 		# compute the Del values for output units using observed error (eq. 18.8)
 		# starting at output layer, repeat for each hidden layer until earliest reached
 			# propagate the Del values back to previous layer
@@ -82,6 +94,14 @@ class NeuralNetwork:
 			)
 
 	def getWeightsChange(self, x, y):
+		"""
+		xx
+
+		@params x - xx
+		@params y - xx
+		@return weights_change - xx
+		@return bias_change - xx
+		"""
 		# feed forward
 		thresholds, acts = self.feedForward(x)
 
@@ -128,6 +148,14 @@ class NeuralNetwork:
 		return weights_change, bias_change
 
 	def batchPropagate(self, examples, labels):
+		"""
+		xx
+
+		@params examples - xx
+		@params labels - xx
+		@return n/a.
+		"""
+
 		""" Does backpropagation in a batch, updating only after feeding forward all the examples """
 		""" Similar to backpropagation, but it only updates weights
 		after looking at all of the examples """
@@ -158,27 +186,37 @@ class NeuralNetwork:
 			)
 
 	def train(self, examples, labels, alpha):
-		for t in range(self.iterations): #repeat some number of times
+		"""
+		Trains the weights and biases of the neural network using examples
+		and labels.
+		"""
+		for t in range(self.iterations):
+			# Calculate decaying alpha.
 			self.alpha = alpha - (alpha*t/self.iterations)
 
-			# shuffle the examples and labels to that we do not train on
-			# them in the same order every iteration.
-			# good practice?
+			# Shuffle the data so that we see the data in different
+			# orders while training.
 			examples, labels = self.doubleShuffle(examples, labels)
 
 			for e in range(len(examples)):
+				# Backpropogate the example and label.
 				self.backpropagate(examples[e], labels[e])
 
-			# checks how many examples we currently classify correctly.
+			# Check how many examples we classify correctly.
 			self.numberCorrect(examples, labels)
 
 	def batchTrain(self, examples, labels, alpha, batch_size):
-		""" Similar to training, but executes in batches """
+		"""
+		Trains the weights and biases of the neural network using examples
+		and labels with a provided batch size.
+		"""
 		for t in range(self.iterations):
+			# Calculate decaying alpha.
 			self.alpha = alpha - (alpha*t/self.iterations)
 
+			# Shuffle the data so that we get different batches each
+			# iteration.
 			examples, labels = self.doubleShuffle(examples, labels)
-
 			maxSize = len(examples)
 			for e in range(0, maxSize, batch_size):
 				num_in_batch = batch_size
@@ -189,50 +227,70 @@ class NeuralNetwork:
 				exs = examples[e:e+num_in_batch]
 				labs = labels[e:e+num_in_batch]
 
+				# Backpropogate the batch.
 				self.batchPropagate(exs, labs)
 
-			# checks how many examples we currently classify correctly.
+			# Check how many examples we classify correctly.
 			self.numberCorrect(examples, labels)
 
 	def error(self, label, activation):
+		"""
+		Calculates the difference between a label and an activation.
+		"""
 		return (label - activation)
 
 	def numberCorrect(self, images, labels):
+		"""
+		Classifies a given set of images and labels using the trained
+		weights and biases. Prints the number of correct classifications.
+		"""
 		count = 0
 		for i in range(len(images)):
 			image = images[i]
 			label = labels[i]
 
-			# feed forward
+			# Feed forward the image.
 			thresholds, acts = self.feedForward(image)
 			index = np.argmax(acts[-1])
 			label_index = np.argmax(label)
 
+			# Check whether the classification was correct.
 			if index == label_index:
 				count += 1
 
 		print str(count) + "/" + str(len(images))
 
 	def doubleShuffle(self, list1, list2):
-		""" shuffles two corresponding lists of equal length """
-		list1new = []
-		list2new = []
+		"""
+		Shuffles two corresponding lists of equal length.
+		"""
+		list1_new = []
+		list2_new = []
 		index_shuf = range(len(list1))
+		# Randomly shuffle the input
 		random.shuffle(index_shuf)
-		# randomly shuffle the input
 		for i in index_shuf:
-			list1new.append(list1[i])
-			list2new.append(list2[i])
+			list1_new.append(list1[i])
+			list2_new.append(list2[i])
 
-		return list1new, list2new
+		return list1_new, list2_new
 
 	def sigmoid(self, x):
+		"""
+		Calculates the sigmoid value for a given x.
+		"""
 		return 1.0 / (1 + np.exp(-x))
 
 	def sigmoidPrime(self, x):
+		"""
+		Calculates the sigmoid prime value for a given x.
+		"""
 		return self.sigmoid(x)*(1.0-self.sigmoid(x))
 
 	def saveWeightsAndBias(self, filename):
+		"""
+		Pickles (saves) the weights and biases.
+		"""
 		f = open(filename, "w")
 		cPickle.dump({
 			'weights' : self.weights,
@@ -241,6 +299,9 @@ class NeuralNetwork:
 		f.close()
 
 	def loadWeightsAndBias(self, filename):
+		"""
+		Loads saved weights and biases.
+		"""
 		f = open(filename, "r")
 		weights_bias = cPickle.load(f)
 		f.close()
