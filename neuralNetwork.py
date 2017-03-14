@@ -2,7 +2,7 @@
 # Neural network implementation.
 # 03.11.17
 
-import loadData, numpy as np, random
+import loadData, numpy as np, random, cPickle
 from operator import add
 
 # TODO:
@@ -224,6 +224,14 @@ class NeuralNetwork:
 	def sigmaPrime(self, x):
 		return self.sigma(x)*(1.0-self.sigma(x))
 
+	def storeWeightsAndBias(self):
+		f = open("neuralNetwork-weights-bias", "w")
+		cPickle.dump({
+			'weights' : self.weights,
+			'bias' : self.bias
+		}, f)
+		f.close()
+
 def main():
 	# # Loads the train, dev and test sets.
 	# # 50,000, 10,000, 10,000
@@ -233,11 +241,22 @@ def main():
 	# Gets the training labels.
 	train_labels = train[1]
 
-	network = NeuralNetwork(10, [784, 100, 10])
-	# network.train(train_images, train_labels, 0.3)
-	network.batchTrain(train_images, train_labels, 0.3, 10)
+	network = NeuralNetwork(2, [784, 10, 10])
+	network.train(train_images, train_labels, 0.3)
+	# network.batchTrain(train_images, train_labels, 0.3, 10)
 	# try it on the dev set.
 	network.numberCorrect(dev[0], dev[1])
+	network.storeWeightsAndBias()
+
+	# f = open("neuralNetwork-weights-bias", "r")
+	# weights_bias = cPickle.load(f)
+	# f.close()
+	# weights = weights_bias['weights']
+	# bias = weights_bias['bias']
+
+	# network.weights = weights
+	# network.bias = bias
+	# network.numberCorrect(dev[0], dev[1])
 
 if __name__ == '__main__':
 	main()
