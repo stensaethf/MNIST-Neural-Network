@@ -1,16 +1,10 @@
 # NeuralNetwork
 # Neural network implementation.
+# Eric Walker, Frederik Roenn Stensaeth.
 # 03.15.17
 
 import loadData, numpy as np, random, cPickle
 from operator import add
-
-# TODO:
-# 1. comment.
-# 2. README file
-
-# Random seed. Remove when done.
-random.seed(50)
 
 class NeuralNetwork:
 	def __init__(self, iterations, layers):
