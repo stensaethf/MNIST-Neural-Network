@@ -9,8 +9,6 @@ from operator import add
 # 1. play around with alpha (learning rate).
 # 2. play around with size of random numbers.
 # 3. store weights/bias matrices.
-# 4. different learning methods? stochastic gradient descent?
-# 5. move reshaping into data loader or some other function?
 # 6. comment.
 # 7. <something />
 
@@ -36,9 +34,9 @@ class NeuralNetwork:
 			self.weights.append(np.zeros((self.layers[i], self.layers[i-1])))
 			self.bias.append(np.zeros((self.layers[i], 1)))
 			for j in range(self.layers[i]):
-				self.bias[-1][j][0] = random.random()/100
+				self.bias[-1][j][0] = random.random() - 0.5
 				for k in range(self.layers[i - 1]):
-					self.weights[-1][j][k] = random.random()/100
+					self.weights[-1][j][k] = random.random() - 0.5
 
 	def feedForward(self, result):
 		thresholds = []
@@ -62,10 +60,7 @@ class NeuralNetwork:
 		# 18.8: w_i=w_i+\alpha(y-h_w(x))*h_w(x)(1-h_w(x))*x_i
 		# h_w(x)=Log(w*x)=1/(1+e^{-w*x})  ---Threshold function---
 
-		x = example
-		y = label
-
-		weights_change, bias_change = self.getWeightsChange(x, y)
+		weights_change, bias_change = self.getWeightsChange(example, label)
 
 		# update every weight and bias in network.
 		for l in range(len(self.layers)-1):
@@ -156,7 +151,6 @@ class NeuralNetwork:
 
 	def train(self, examples, labels, alpha):
 		for t in range(self.iterations): #repeat some number of times
-			# self.alpha = (1000/1000+t)
 			self.alpha = alpha - (alpha*t/self.iterations)
 
 			# shuffle the examples and labels to that we do not train on
@@ -165,11 +159,7 @@ class NeuralNetwork:
 			examples, labels = self.doubleShuffle(examples, labels)
 
 			for e in range(len(examples)):
-				x = np.reshape(examples[e], (784, 1))
-				y = np.zeros((self.layers[-1], 1))
-				y[labels[e]] = 1.0
-
-				self.backpropagate(x, y)
+				self.backpropagate(examples[e], labels[e])
 
 			# checks how many examples we currently classify correctly.
 			self.numberCorrect(examples, labels)
@@ -188,10 +178,8 @@ class NeuralNetwork:
 					num_in_batch = maxSize - 1 - e
 				if num_in_batch == 0:
 					continue
-				exs = [np.reshape(examples[e+i], (784, 1)) for i in range(num_in_batch)]
-				labs = [np.zeros((self.layers[-1], 1)) for i in range(num_in_batch)]
-				for i in range(num_in_batch):
-					labs[i][labels[e+i]] = 1.0
+				exs = examples[e:e+num_in_batch]
+				labs = labels[e:e+num_in_batch]
 
 				self.batchPropagate(exs, labs)
 
@@ -204,14 +192,15 @@ class NeuralNetwork:
 	def numberCorrect(self, images, labels):
 		count = 0
 		for i in range(len(images)):
-			image = np.reshape(images[i], (784, 1))
+			image = images[i]
 			label = labels[i]
 
 			# feed forward
 			thresholds, acts = self.feedForward(image)
 			index = np.argmax(acts[-1])
+			label_index = np.argmax(label)
 
-			if index == label:
+			if index == label_index:
 				count += 1
 
 		print str(count) + "/" + str(len(images))
@@ -245,7 +234,7 @@ def main():
 	train_labels = train[1]
 
 	network = NeuralNetwork(10, [784, 100, 10])
-	#network.train(train_images[:1000], train_labels[:1000], 0.3)
+	# network.train(train_images, train_labels, 0.3)
 	network.batchTrain(train_images, train_labels, 0.3, 10)
 	# try it on the dev set.
 	network.numberCorrect(dev[0], dev[1])

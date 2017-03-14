@@ -3,7 +3,7 @@
 # nicely pickled data.
 # 03.11.17
 
-import cPickle, gzip, numpy
+import cPickle, gzip, numpy as np
 
 def loadMNIST():
 	# Load the dataset.
@@ -15,7 +15,28 @@ def loadMNIST():
 	# labels[]: list of labels for the images (integers 0-9).
 	train_set, dev_set, test_set = cPickle.load(f)
 	f.close()
+
+	train_set = reshapeSet(train_set)
+	dev_set = reshapeSet(dev_set)
+	test_set = reshapeSet(test_set)
+
 	return train_set, dev_set, test_set
+
+def reshapeSet(data):
+	images = data[0]
+	labels = data[1]
+
+	images_reshaped = []
+	labels_reshaped = []
+
+	for i in range(len(images)):
+		image_reshaped = np.reshape(images[i], (784, 1))
+		label_reshaped = np.zeros((10, 1))
+		label_reshaped[labels[i]] = 1.0
+		images_reshaped.append(image_reshaped)
+		labels_reshaped.append(label_reshaped)
+
+	return (images_reshaped, labels_reshaped)
 
 def main():
 	# Loads the train, dev and test sets.
