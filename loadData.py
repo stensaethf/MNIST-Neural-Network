@@ -6,16 +6,15 @@
 import cPickle, gzip, numpy as np
 
 def loadMNIST():
+	"""
+	Function for loading the MNIST dataset.
+	"""
 	# Load the dataset.
 	f = gzip.open('mnist.pkl.gz', 'rb')
-	# Each set is a list of the form [images[], labels[]].
-	# images[]: list of images, each a numpy array of length 784 (28 x 28)
-	# 	where each item is a grayscale pixel (float values between 0 and 1
-	# 	(0 stands for black, 1 for white).
-	# labels[]: list of labels for the images (integers 0-9).
 	train_set, dev_set, test_set = cPickle.load(f)
 	f.close()
 
+	# Reshape the dataset.
 	train_set = reshapeSet(train_set)
 	dev_set = reshapeSet(dev_set)
 	test_set = reshapeSet(test_set)
@@ -23,12 +22,18 @@ def loadMNIST():
 	return train_set, dev_set, test_set
 
 def reshapeSet(data):
+	"""
+	Function for reshaping the dataset. We want the images to be numpy arrays
+	of 781x1 and the labels to be numpy arrays of 10x1.
+	"""
 	images = data[0]
 	labels = data[1]
 
 	images_reshaped = []
 	labels_reshaped = []
 
+	# Reshape the images and labels to be numpy arrays of dimensions 784x1 and
+	# 10x1, respectively.
 	for i in range(len(images)):
 		image_reshaped = np.reshape(images[i], (784, 1))
 		label_reshaped = np.zeros((10, 1))
