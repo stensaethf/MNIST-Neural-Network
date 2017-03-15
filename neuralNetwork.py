@@ -283,16 +283,19 @@ class NeuralNetwork:
 def printUsage():
 	print """Invalid arguments. Usage:\n
 --batch\t\t\tsets mode to minibatch (default false)\n
+--test\t\t\tsets the mode to run weights on the test set after training
 batch-size [size]\tsets the batch size for minibatch (default 100)\n
 alpha [alpha]\t\tsets the alpha (default 0.3)\n
 iterations [iterations]\tsets the number of iterations to run (default 10)\n
 layers [layers]\t\tdefine the number of hidden layers as the first param
 \t\t\tthen list the hidden layers. e.g. layers 2 100 50 makes 2 hidden layers
-\t\t\t(default 1 hidden layer with 100 neurons)"""
+\t\t\t(default 1 hidden layer with 100 neurons)\n
+load-weights [filename]\tload the weights from a pickled file"""
 
 def main():
 	# Check the command line arguments
 	regular = True
+	test = False
 	alpha = 0.3
 	batch_size = 100
 	iterations = 10
@@ -302,6 +305,8 @@ def main():
 		while i < len(sys.argv):
 			if sys.argv[i] == '--batch':
 				regular = False
+			elif sys.argv[i] == '--test':
+				test = True
 			elif sys.argv[i] == 'batch-size':
 				batch_size = int(sys.argv[i+1])
 				i += 1
@@ -320,6 +325,9 @@ def main():
 			elif sys.argv[i] == '--help':
 				printUsage()
 				return 0
+			elif sys.argv[i] == 'load-weights':
+				filename = sys.argv[i+1]
+				i += 1
 
 			else:
 				printUsage()
@@ -335,12 +343,17 @@ def main():
 	train_labels = train[1]
 
 	network = NeuralNetwork(iterations, layerlist)
-	if regular:
-		network.train(train_images, train_labels, alpha)
+	if filename is not None:
+		network.loadWeightsAndBias(filename)
 	else:
-		network.batchTrain(train_images, train_labels, alpha, batch_size)
-	# try it on the dev set.
-	network.numberCorrect(dev[0], dev[1])
+		if regular:
+			network.train(train_images, train_labels, alpha)
+		else:
+			network.batchTrain(train_images, train_labels, alpha, batch_size)
+	if test == True:
+		network.numberCorrect(test[0], test[1])
+	else:
+		network.numberCorrect(dev[0], dev[1])
 
 if __name__ == '__main__':
 	main()
