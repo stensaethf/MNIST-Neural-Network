@@ -300,6 +300,7 @@ def main():
 	batch_size = 100
 	iterations = 10
 	layerlist = [784, 100, 10]
+	filename = None
 	if len(sys.argv) > 1:
 		i = 1
 		while i < len(sys.argv):
