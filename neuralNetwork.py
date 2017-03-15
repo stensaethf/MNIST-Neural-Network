@@ -315,7 +315,7 @@ def main():
 				layerlist = [784, 10]
 				i += 1
 				for j in range(i+1, i+1+int(sys.argv[i])):
-					layerlist.insert(j, int(sys.argv[j]))
+					layerlist.insert(j-i, int(sys.argv[j]))
 				i += int(sys.argv[i])
 			elif sys.argv[i] == '--help':
 				printUsage()
